@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Referral Network</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  /* warm-dark paper palette */
+  --bg:#131211;
+  --bg-soft:#1A1917;
+  --surface:#1C1B19;
+  --surface-2:#232220;
+  --elev:#2A2825;
+  --hairline:rgba(239,233,220,0.07);
+  --hairline-strong:rgba(239,233,220,0.13);
+
+  /* ink */
+  --ink:#EFE9DC;
+  --ink-2:#A8A294;
+  --ink-3:#75716A;
+  --ink-4:#54514B;
+
+  /* single warm accent */
+  --accent:#D89968;
+  --accent-soft:rgba(216,153,104,0.14);
+  --accent-strong:#E5A876;
+
+  /* painterly status — muted, editorial */
+  --st-active:#9DC189;  --st-active-bg:rgba(157,193,137,0.10); --st-active-bd:rgba(157,193,137,0.28);
+  --st-warm:#E0B66A;    --st-warm-bg:rgba(224,182,106,0.10);   --st-warm-bd:rgba(224,182,106,0.28);
+  --st-cold:#95B0D0;    --st-cold-bg:rgba(149,176,208,0.10);   --st-cold-bd:rgba(149,176,208,0.28);
+  --st-new:#C2A6D6;     --st-new-bg:rgba(194,166,214,0.10);    --st-new-bd:rgba(194,166,214,0.28);
+  --st-blocked:#D89B92; --st-blocked-bg:rgba(216,155,146,0.10);--st-blocked-bd:rgba(216,155,146,0.28);
+  --st-fu:#E0B66A;
+
+  --radius:14px;
+  --radius-sm:10px;
+  --radius-xs:8px;
+  --shadow-card:0 1px 0 rgba(255,255,255,0.02) inset, 0 1px 2px rgba(0,0,0,0.25);
+  --shadow-pop:0 24px 60px -20px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.35);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  font-family:"Geist","Inter",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  font-feature-settings:"ss01","cv11";
+  background:var(--bg);
+  color:var(--ink);
+  font-size:15px;
+  line-height:1.5;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  /* subtle warm vignette so the page doesn't feel flat */
+  background-image:
+    radial-gradient(ellipse at 50% -10%, rgba(216,153,104,0.05), transparent 55%),
+    radial-gradient(ellipse at 100% 100%, rgba(216,153,104,0.025), transparent 50%);
+  background-attachment:fixed;
+}
+
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit;}
+button{cursor:pointer;background:none;border:none;}
+
+/* form controls */
+input,select,textarea{
+  width:100%;
+  padding:11px 13px;
+  background:var(--bg-soft);
+  color:var(--ink);
+  border:1px solid var(--hairline-strong);
+  border-radius:var(--radius-xs);
+  font-size:14.5px;
+  font-weight:450;
+  transition:border-color .15s, box-shadow .15s, background .15s;
+  -webkit-appearance:none;
+  appearance:none;
+}
+input::placeholder,textarea::placeholder{color:var(--ink-4);}
+input:hover,select:hover,textarea:hover{border-color:rgba(239,233,220,0.20);}
+input:focus,select:focus,textarea:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-soft);
+  background:var(--bg);
+}
+textarea{resize:vertical;min-height:88px;line-height:1.55;}
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23A8A294' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 13px center;
+  padding-right:34px;
+}
+
+.mono{font-family:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-feature-settings:"tnum";}
+
+/* ─── TOPBAR ─── */
+.topbar{
+  position:sticky; top:0; z-index:50;
+  background:rgba(19,18,17,0.78);
+  backdrop-filter:blur(20px) saturate(140%);
+  -webkit-backdrop-filter:blur(20px) saturate(140%);
+  border-bottom:1px solid var(--hairline);
+}
+.topbar-inner{
+  max-width:1080px; margin:0 auto;
+  height:64px; padding:0 24px;
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+}
+.brand{display:flex;align-items:center;gap:11px;}
+.brand-mark{
+  width:28px; height:28px;
+  border-radius:8px;
+  background:linear-gradient(135deg, var(--accent) 0%, #B47A4D 100%);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 1px 0 rgba(255,255,255,0.15) inset, 0 4px 10px rgba(216,153,104,0.20);
+  position:relative;
+}
+.brand-mark::after{
+  content:""; position:absolute; inset:0;
+  border-radius:8px;
+  background:radial-gradient(circle at 30% 25%, rgba(255,255,255,0.25), transparent 55%);
+}
+.brand-mark svg{position:relative;z-index:1;}
+.brand-name{
+  font-size:16.5px; font-weight:600; letter-spacing:-0.015em;
+  color:var(--ink);
+}
+.brand-name em{
+  font-family:"Instrument Serif",serif;
+  font-style:italic; font-weight:400;
+  color:var(--ink-2);
+  margin-left:2px;
+}
+.topbar-right{display:flex;align-items:center;gap:14px;}
+.total-pill{
+  font-size:12.5px; font-weight:500;
+  color:var(--ink-2);
+  padding:6px 11px 6px 9px;
+  border:1px solid var(--hairline-strong);
+  border-radius:99px;
+  display:inline-flex; align-items:center; gap:7px;
+  background:var(--surface);
+}
+.total-pill .dot{
+  width:5px; height:5px; border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 6px var(--accent);
+}
+.total-pill .n{color:var(--ink); font-weight:600;}
+
+/* ─── HERO HEADER ─── */
+.wrap{max-width:1080px; margin:0 auto; padding:28px 24px 100px;}
+.hero{
+  display:flex; align-items:flex-end; justify-content:space-between;
+  gap:24px; margin-bottom:24px; padding:8px 4px 0;
+}
+.hero h1{
+  font-size:34px; font-weight:600; letter-spacing:-0.025em;
+  line-height:1.05; color:var(--ink);
+}
+.hero h1 em{
+  font-family:"Instrument Serif",serif;
+  font-style:italic; font-weight:400;
+  color:var(--accent);
+  letter-spacing:-0.01em;
+}
+.hero-sub{
+  font-size:14px; color:var(--ink-3);
+  margin-top:8px; max-width:480px;
+}
+.hero-meta{
+  font-size:12.5px; color:var(--ink-3);
+  display:flex; flex-direction:column; gap:4px; text-align:right;
+}
+.hero-meta b{color:var(--ink);font-weight:600;}
+
+/* ─── STATS STRIP ─── */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(6, 1fr);
+  gap:10px;
+  margin-bottom:20px;
+}
+.stat{
+  position:relative;
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius-sm);
+  padding:13px 14px 12px;
+  text-align:left;
+  transition:border-color .15s, background .15s, transform .08s;
+  cursor:pointer;
+  overflow:hidden;
+}
+.stat:hover{border-color:var(--hairline-strong); background:var(--surface-2);}
+.stat:active{transform:translateY(1px);}
+.stat.is-active{
+  border-color:var(--ink-4);
+  background:var(--surface-2);
+  box-shadow:0 0 0 1px var(--hairline-strong) inset;
+}
+.stat-row{display:flex; align-items:center; gap:7px; margin-bottom:6px;}
+.stat-dot{width:6px; height:6px; border-radius:50%;}
+.stat-dot.all{background:var(--accent);}
+.stat-dot.Active{background:var(--st-active);}
+.stat-dot.Warm{background:var(--st-warm);}
+.stat-dot.Cold{background:var(--st-cold);}
+.stat-dot.New{background:var(--st-new);}
+.stat-dot.Blocked{background:var(--st-blocked);}
+.stat-lbl{
+  font-size:11px; font-weight:500; letter-spacing:0.06em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+}
+.stat-n{
+  font-size:24px; font-weight:600; letter-spacing:-0.02em;
+  color:var(--ink); line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.stat.is-active .stat-lbl{color:var(--ink-2);}
+
+/* ─── TOOLBAR (search + filters + add) ─── */
+.toolbar{
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  padding:10px;
+  margin-bottom:18px;
+  display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+  box-shadow:var(--shadow-card);
+}
+.search{
+  flex:1; min-width:220px; position:relative;
+  display:flex; align-items:center;
+}
+.search input{
+  padding-left:38px;
+  background:var(--bg-soft);
+  border-color:transparent;
+  height:42px;
+}
+.search input:hover{border-color:var(--hairline-strong);}
+.search-ico{
+  position:absolute; left:13px;
+  color:var(--ink-3); pointer-events:none;
+  display:flex;
+}
+.kbd{
+  position:absolute; right:10px;
+  font-family:"Geist Mono",monospace;
+  font-size:11px; color:var(--ink-4);
+  background:var(--surface-2);
+  border:1px solid var(--hairline);
+  padding:2px 6px; border-radius:5px;
+  pointer-events:none;
+}
+.search input:focus ~ .kbd{opacity:0;}
+
+.filter-sel{
+  height:42px;
+  width:auto; min-width:140px;
+  font-size:14px; font-weight:500;
+  background:var(--bg-soft);
+  border-color:transparent;
+  color:var(--ink-2);
+}
+.filter-sel:hover{border-color:var(--hairline-strong); color:var(--ink);}
+
+.btn-add{
+  height:42px; padding:0 18px 0 14px;
+  background:var(--accent);
+  color:#1B1208;
+  border-radius:var(--radius-xs);
+  font-size:14px; font-weight:600;
+  display:inline-flex; align-items:center; gap:7px;
+  white-space:nowrap; flex-shrink:0;
+  transition:background .15s, transform .08s, box-shadow .15s;
+  box-shadow:0 1px 0 rgba(255,255,255,0.20) inset, 0 6px 18px -6px rgba(216,153,104,0.55);
+}
+.btn-add:hover{background:var(--accent-strong);}
+.btn-add:active{transform:translateY(1px);}
+
+/* ─── CARDS LIST ─── */
+.list{display:flex; flex-direction:column; gap:10px;}
+.card{
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-card);
+  overflow:hidden;
+  transition:border-color .15s, background .15s;
+  position:relative;
+}
+.card:hover{border-color:var(--hairline-strong);}
+.card.editing{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft);}
+
+/* refined status indicator — left rail */
+.card::before{
+  content:""; position:absolute;
+  left:0; top:14px; bottom:14px;
+  width:2px; border-radius:0 2px 2px 0;
+  background:var(--ink-4);
+  transition:background .15s;
+}
+.card[data-status="Active"]::before{background:var(--st-active);}
+.card[data-status="Warm"]::before{background:var(--st-warm);}
+.card[data-status="Cold"]::before{background:var(--st-cold);}
+.card[data-status="New"]::before{background:var(--st-new);}
+.card[data-status="Blocked"]::before{background:var(--st-blocked);}
+
+.card-view{padding:18px 20px 18px;}
+.card-top{
+  display:flex; align-items:flex-start; justify-content:space-between;
+  gap:14px; margin-bottom:14px;
+}
+.card-name-row{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.card-name{
+  font-size:19px; font-weight:600; letter-spacing:-0.018em;
+  color:var(--ink); line-height:1.2;
+}
+.card-meta{
+  margin-top:5px;
+  font-size:13px; color:var(--ink-3);
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+}
+.card-meta .sep{color:var(--ink-4);}
+.card-type{
+  display:inline-flex; align-items:center; gap:5px;
+  color:var(--ink-2); font-weight:500;
+}
+.card-type svg{color:var(--ink-3);}
+
+.badges{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;}
+.badge{
+  padding:3px 10px 4px;
+  border-radius:99px;
+  font-size:12px; font-weight:500;
+  letter-spacing:-0.005em;
+  border:1px solid transparent;
+  display:inline-flex; align-items:center; gap:6px;
+  line-height:1.4;
+}
+.badge .dot{width:5px; height:5px; border-radius:50%;}
+.badge.Active{background:var(--st-active-bg); border-color:var(--st-active-bd); color:var(--st-active);}
+.badge.Active .dot{background:var(--st-active);}
+.badge.Warm{background:var(--st-warm-bg); border-color:var(--st-warm-bd); color:var(--st-warm);}
+.badge.Warm .dot{background:var(--st-warm);}
+.badge.Cold{background:var(--st-cold-bg); border-color:var(--st-cold-bd); color:var(--st-cold);}
+.badge.Cold .dot{background:var(--st-cold);}
+.badge.New{background:var(--st-new-bg); border-color:var(--st-new-bd); color:var(--st-new);}
+.badge.New .dot{background:var(--st-new);}
+.badge.Blocked{background:var(--st-blocked-bg); border-color:var(--st-blocked-bd); color:var(--st-blocked);}
+.badge.Blocked .dot{background:var(--st-blocked);}
+.badge-fu{
+  background:var(--st-warm-bg); border-color:var(--st-warm-bd); color:var(--st-warm);
+}
+.badge-fu svg{margin-left:-1px;}
+
+.btn-edit{
+  width:36px; height:36px; flex-shrink:0;
+  background:transparent;
+  border:1px solid var(--hairline);
+  border-radius:var(--radius-xs);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--ink-3);
+  transition:all .15s;
+}
+.btn-edit:hover{
+  background:var(--surface-2);
+  border-color:var(--hairline-strong);
+  color:var(--ink);
+}
+
+.card-grid{
+  display:grid;
+  grid-template-columns:1.2fr 1fr 1fr;
+  gap:18px 24px;
+  margin-bottom:14px;
+  padding-top:14px;
+  border-top:1px solid var(--hairline);
+}
+.field{min-width:0;}
+.field.span-2{grid-column:span 2;}
+.field-lbl{
+  font-size:10.5px; font-weight:500;
+  letter-spacing:0.08em; text-transform:uppercase;
+  color:var(--ink-3); margin-bottom:5px;
+}
+.field-val{
+  font-size:14.5px; font-weight:500;
+  color:var(--ink); line-height:1.35;
+  word-wrap:break-word; overflow-wrap:anywhere;
+}
+.field-val.muted{color:var(--ink-4); font-weight:400; font-style:italic;}
+.field-val .sub{
+  font-size:12.5px; color:var(--ink-3); font-weight:400;
+  margin-left:6px;
+}
+.field-val.warn{color:var(--st-warm);}
+.field-val.warn .sub{color:var(--st-warm);}
+
+.wa-link{
+  color:var(--st-active);
+  font-weight:500; text-decoration:none;
+  display:inline-flex; align-items:center; gap:6px;
+  transition:color .15s;
+}
+.wa-link:hover{color:#B5D49F;}
+.wa-link svg{flex-shrink:0;}
+
+.card-notes{
+  background:var(--bg-soft);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius-xs);
+  padding:11px 14px;
+  font-size:13.5px; color:var(--ink-2);
+  line-height:1.55;
+  position:relative;
+}
+.card-notes::before{
+  content:""; position:absolute;
+  left:0; top:10px; bottom:10px;
+  width:2px; border-radius:0 2px 2px 0;
+  background:var(--ink-4);
+  opacity:0.6;
+}
+.card-notes.empty{color:var(--ink-4); font-style:italic;}
+
+/* ─── INLINE EDIT ─── */
+.card-edit{
+  display:none;
+  padding:18px 20px 20px;
+  border-top:1px solid var(--hairline);
+  background:var(--bg-soft);
+}
+.card.editing .card-edit{display:block;}
+.edit-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+.fg{margin:0; min-width:0;}
+.fg.full{grid-column:1/-1;}
+.fg label{
+  display:block;
+  font-size:11px; font-weight:500;
+  letter-spacing:0.06em; text-transform:uppercase;
+  color:var(--ink-3); margin-bottom:6px;
+}
+.edit-actions{
+  display:flex; flex-wrap:wrap; gap:8px;
+  margin-top:16px; padding-top:16px;
+  border-top:1px solid var(--hairline);
+}
+.btn-save{
+  padding:10px 20px;
+  background:var(--accent);
+  color:#1B1208;
+  border-radius:var(--radius-xs);
+  font-size:14px; font-weight:600;
+  transition:background .15s, transform .08s;
+  box-shadow:0 1px 0 rgba(255,255,255,0.18) inset;
+}
+.btn-save:hover{background:var(--accent-strong);}
+.btn-save:active{transform:translateY(1px);}
+.btn-cancel{
+  padding:10px 16px;
+  background:transparent;
+  color:var(--ink-2);
+  border:1px solid var(--hairline-strong);
+  border-radius:var(--radius-xs);
+  font-size:14px; font-weight:500;
+  transition:all .15s;
+}
+.btn-cancel:hover{background:var(--surface-2); color:var(--ink); border-color:var(--ink-4);}
+.btn-del{
+  padding:10px 16px;
+  background:transparent;
+  color:var(--st-blocked);
+  border:1px solid var(--st-blocked-bd);
+  border-radius:var(--radius-xs);
+  font-size:14px; font-weight:500;
+  margin-left:auto;
+  transition:all .15s;
+}
+.btn-del:hover{background:var(--st-blocked-bg);}
+
+/* ─── MODAL ─── */
+.modal-bg{
+  display:none; position:fixed; inset:0; z-index:200;
+  background:rgba(8,7,6,0.65);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  align-items:flex-start; justify-content:center;
+  padding:32px 16px; overflow-y:auto;
+}
+.modal-bg.show{display:flex; animation:fade .18s ease-out;}
+@keyframes fade{from{opacity:0;}to{opacity:1;}}
+.modal{
+  background:var(--surface);
+  border:1px solid var(--hairline-strong);
+  border-radius:18px;
+  width:100%; max-width:580px;
+  padding:28px 28px 24px;
+  box-shadow:var(--shadow-pop);
+  margin:auto;
+  animation:pop .22s cubic-bezier(.2,.9,.3,1.1);
+}
+@keyframes pop{from{opacity:0; transform:translateY(8px) scale(0.98);}to{opacity:1; transform:translateY(0) scale(1);}}
+.modal-head{
+  display:flex; align-items:flex-start; justify-content:space-between;
+  gap:16px; margin-bottom:20px;
+}
+.modal-head h2{
+  font-size:22px; font-weight:600; letter-spacing:-0.02em;
+  color:var(--ink);
+}
+.modal-head h2 em{
+  font-family:"Instrument Serif",serif;
+  font-style:italic; font-weight:400;
+  color:var(--accent);
+}
+.modal-head p{font-size:13px; color:var(--ink-3); margin-top:3px;}
+.modal-close{
+  width:32px; height:32px;
+  background:transparent;
+  border:1px solid var(--hairline);
+  border-radius:8px;
+  color:var(--ink-3);
+  display:flex; align-items:center; justify-content:center;
+  transition:all .15s;
+  flex-shrink:0;
+}
+.modal-close:hover{background:var(--surface-2); color:var(--ink);}
+.modal-actions{
+  display:flex; flex-wrap:wrap; gap:8px;
+  margin-top:18px; padding-top:18px;
+  border-top:1px solid var(--hairline);
+}
+
+/* ─── EMPTY STATE ─── */
+.list-empty{
+  text-align:center; padding:80px 24px 60px;
+  border:1px dashed var(--hairline-strong);
+  border-radius:var(--radius);
+  background:var(--surface);
+}
+.list-empty-mark{
+  width:48px; height:48px; margin:0 auto 16px;
+  border-radius:12px;
+  background:var(--surface-2);
+  border:1px solid var(--hairline);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--ink-3);
+}
+.list-empty h3{
+  font-size:17px; font-weight:600; letter-spacing:-0.01em;
+  color:var(--ink); margin-bottom:6px;
+}
+.list-empty h3 em{
+  font-family:"Instrument Serif",serif;
+  font-style:italic; font-weight:400;
+  color:var(--accent); font-size:18px;
+}
+.list-empty p{font-size:14px; color:var(--ink-3);}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:900px){
+  .stats{grid-template-columns:repeat(3, 1fr);}
+  .card-grid{grid-template-columns:1fr 1fr;}
+  .field.span-2{grid-column:span 2;}
+}
+@media(max-width:640px){
+  .wrap{padding:20px 16px 80px;}
+  .topbar-inner{padding:0 16px;}
+  .hero{flex-direction:column; align-items:flex-start; gap:10px;}
+  .hero h1{font-size:28px;}
+  .hero-meta{text-align:left;}
+  .stats{grid-template-columns:repeat(2, 1fr); gap:8px;}
+  .stat-n{font-size:21px;}
+  .card-grid{grid-template-columns:1fr; gap:14px;}
+  .field.span-2{grid-column:span 1;}
+  .edit-grid{grid-template-columns:1fr;}
+  .fg.full{grid-column:1;}
+  .toolbar{padding:8px;}
+  .filter-sel{flex:1; min-width:120px;}
+}
+@media(max-width:420px){
+  .btn-add span{display:none;}
+  .btn-add{padding:0 14px;}
+  .kbd{display:none;}
+}
+
+/* Reduced motion */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0.01ms !important; transition-duration:0.01ms !important;}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B1208" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="9" cy="8" r="3"/>
+          <circle cx="17" cy="16" r="3"/>
+          <path d="M11.5 9.5L14.5 14"/>
+        </svg>
+      </div>
+      <div class="brand-name">Referral<em> Network</em></div>
+      <div style="font-size:12px;font-weight:600;color:#999;letter-spacing:0.05em;border-left:1px solid #ddd;padding-left:12px;white-space:nowrap;">TAN &amp; YEO · ALVIN YEO</div>
+    </div>
+    <div class="topbar-right">
+      <span class="total-pill"><span class="dot"></span><span class="n" id="totalNum">0</span><span id="totalLbl">contacts</span></span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section class="hero">
+    <div>
+      <h1>Your network, <em>organised.</em></h1>
+      <p class="hero-sub">Track every agent, banker and referral relationship in one place. Tap any card to edit.</p>
+    </div>
+    <div class="hero-meta" id="heroMeta">
+      <span><b id="fuCount">0</b> needing follow-up</span>
+      <span><b id="filesCount">0</b> files referred to date</span>
+    </div>
+  </section>
+
+  <!-- STATS / FILTER STRIP -->
+  <section class="stats" id="statsRow"></section>
+
+  <!-- TOOLBAR -->
+  <section class="toolbar">
+    <div class="search">
+      <span class="search-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7.5"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <input type="text" id="searchInput" placeholder="Search name, company, city…" autocomplete="off"/>
+      <span class="kbd">/</span>
+    </div>
+    <select class="filter-sel" id="fType" aria-label="Filter by type">
+      <option value="">All Types</option>
+      <option value="Agent">Agents Only</option>
+      <option value="Banker">Bankers Only</option>
+    </select>
+    <select class="filter-sel" id="fBank" aria-label="Filter by bank">
+      <option value="">All Banks</option>
+      <option>Public Bank</option><option>CIMB</option><option>Maybank</option>
+      <option>RHB</option><option>Ambank</option><option>Hong Leong</option>
+      <option>UOB</option><option>Affin</option><option>LPPSA</option>
+    </select>
+    <button class="btn-add" id="addBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span>Add Contact</span>
+    </button>
+  </section>
+
+  <!-- CARDS -->
+  <section class="list" id="cardsWrap"></section>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-bg" id="addModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2>Add a <em>new contact</em></h2>
+        <p>Name is required. Everything else can be filled in later.</p>
+      </div>
+      <button class="modal-close" id="mClose" aria-label="Close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="edit-grid">
+      <div class="fg full"><label>Full Name</label><input type="text" id="mn" placeholder="e.g. Ahmad Faris"/></div>
+      <div class="fg">
+        <label>Type</label>
+        <select id="mt" onchange="syncMC()">
+          <option value="Agent">Agent</option>
+          <option value="Banker">Banker</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Company / Bank</label>
+        <input type="text" id="mc_a" placeholder="Agency name"/>
+        <select id="mc_b" style="display:none">
+          <option value="">Select bank…</option>
+          <option>Public Bank</option><option>CIMB</option><option>Maybank</option>
+          <option>RHB</option><option>Ambank</option><option>Hong Leong</option>
+          <option>UOB</option><option>Affin</option><option>LPPSA</option>
+        </select>
+      </div>
+      <div class="fg"><label>Phone (WhatsApp)</label><input type="text" id="mph" placeholder="012-345 6789"/></div>
+      <div class="fg"><label>City</label><input type="text" id="mcy" placeholder="e.g. Subang Jaya"/></div>
+      <div class="fg">
+        <label>State</label>
+        <select id="mst">
+          <option value="">Select state…</option>
+          <option>Johor</option><option>Kedah</option><option>Kelantan</option>
+          <option>Melaka</option><option>Negeri Sembilan</option><option>Pahang</option>
+          <option>Perak</option><option>Perlis</option><option>Pulau Pinang</option>
+          <option>Sabah</option><option>Sarawak</option><option>Selangor</option>
+          <option>Terengganu</option><option>W.P. Kuala Lumpur</option>
+        </select>
+      </div>
+      <div class="fg"><label>Files Referred</label><input type="number" id="mfr" value="0" min="0"/></div>
+      <div class="fg"><label>Last Contact Date</label><input type="date" id="mld"/></div>
+      <div class="fg">
+        <label>Status</label>
+        <select id="mss">
+          <option>New</option><option>Active</option><option>Warm</option>
+          <option>Cold</option><option>Blocked</option>
+        </select>
+      </div>
+      <div class="fg full"><label>Notes</label><textarea id="mnt" placeholder="Any notes…"></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-save" id="mSave">Save Contact</button>
+      <button class="btn-cancel" id="mCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─── DATA + STATE ─── (functional logic preserved from original) */
+var BANKS  = ['Public Bank','CIMB','Maybank','RHB','Ambank','Hong Leong','UOB','Affin','LPPSA'];
+var STATES = ['Johor','Kedah','Kelantan','Melaka','Negeri Sembilan','Pahang','Perak','Perlis','Pulau Pinang','Sabah','Sarawak','Selangor','Terengganu','W.P. Kuala Lumpur'];
+var STATUSES = ['Active','Warm','Cold','New','Blocked'];
+var KEY = 'rnt3_contacts';
+var contacts = [];
+var fStatus = 'all', fType = '', fBank = '', fSearch = '';
+
+function G(id){ return document.getElementById(id); }
+function load(){ try{ contacts=JSON.parse(localStorage.getItem(KEY)||'[]'); }catch(e){ contacts=[]; } }
+function save(){ localStorage.setItem(KEY,JSON.stringify(contacts)); }
+function uid(){ return 'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function esc(s){
+  if(s==null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function wa(phone){
+  if(!phone) return null;
+  var d=String(phone).replace(/\D/g,'');
+  if(!d) return null;
+  if(d.indexOf('60')===0){}
+  else if(d.charAt(0)==='0') d='60'+d.slice(1);
+  else d='60'+d;
+  return 'https://wa.me/'+d;
+}
+function daysAgo(ds){
+  if(!ds) return null;
+  var d=new Date(ds); if(isNaN(d.getTime())) return null;
+  var n=new Date(); n.setHours(0,0,0,0); d.setHours(0,0,0,0);
+  return Math.floor((n-d)/86400000);
+}
+function fmtDate(ds){
+  if(!ds) return '—';
+  var d=new Date(ds); if(isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+}
+function needsFU(c){
+  if(c.status==='Blocked') return false;
+  var d=daysAgo(c.lastContact);
+  return d!==null && d>=30;
+}
+
+/* ─── ICONS (SVG strings) ─── */
+var IC_PHONE = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+var IC_EDIT  = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+var IC_ALERT = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+var IC_AGENT = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21v-2a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+var IC_BANK  = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="21" x2="21" y2="21"/><path d="M3 10l9-6 9 6"/><line x1="5" y1="10" x2="5" y2="20"/><line x1="9" y1="10" x2="9" y2="20"/><line x1="15" y1="10" x2="15" y2="20"/><line x1="19" y1="10" x2="19" y2="20"/></svg>';
+
+/* ─── RENDER ─── */
+function render(){
+  renderStats();
+  renderCards();
+  var n=contacts.length;
+  G('totalNum').textContent=n;
+  G('totalLbl').textContent=n===1?'contact':'contacts';
+  /* Hero meta numbers */
+  var fu=0, files=0;
+  contacts.forEach(function(c){
+    if(needsFU(c)) fu++;
+    files += Number(c.files)||0;
+  });
+  G('fuCount').textContent=fu;
+  G('filesCount').textContent=files;
+}
+
+function renderStats(){
+  var counts={all:contacts.length};
+  STATUSES.forEach(function(s){ counts[s]=0; });
+  contacts.forEach(function(c){ if(counts[c.status]!==undefined) counts[c.status]++; });
+  var items=[{k:'all',label:'All'}].concat(STATUSES.map(function(s){ return {k:s,label:s}; }));
+  G('statsRow').innerHTML=items.map(function(it){
+    var n=counts[it.k]||0;
+    var active=(fStatus===it.k)?' is-active':'';
+    return '<button class="stat'+active+'" onclick="setFS(\''+it.k+'\')" aria-pressed="'+(fStatus===it.k)+'">'
+      +'<div class="stat-row"><span class="stat-dot '+it.k+'"></span><span class="stat-lbl">'+it.label+'</span></div>'
+      +'<div class="stat-n mono">'+n+'</div>'
+      +'</button>';
+  }).join('');
+}
+
+window.setFS=function(s){ fStatus=s; render(); };
+
+function renderCards(){
+  var q=fSearch.toLowerCase();
+  var list=contacts.filter(function(c){
+    if(fStatus!=='all'&&c.status!==fStatus) return false;
+    if(fType&&c.type!==fType) return false;
+    if(fBank&&c.company!==fBank) return false;
+    if(q){ var h=((c.name||'')+' '+(c.company||'')+' '+(c.city||'')).toLowerCase(); if(h.indexOf(q)===-1) return false; }
+    return true;
+  });
+  list.sort(function(a,b){
+    var fa=needsFU(a)?1:0,fb=needsFU(b)?1:0;
+    if(fb!==fa) return fb-fa;
+    return (b.updatedAt||0)-(a.updatedAt||0);
+  });
+  var wrap=G('cardsWrap');
+  if(!list.length){
+    var isEmpty = contacts.length===0;
+    wrap.innerHTML='<div class="list-empty">'
+      +'<div class="list-empty-mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>'
+      +'<h3>'+(isEmpty?'Your network <em>starts here</em>':'No matches')+'</h3>'
+      +'<p>'+(isEmpty?'Tap Add Contact to add your first agent or banker.':'Try adjusting your search or filters.')+'</p>'
+      +'</div>';
+    return;
+  }
+  wrap.innerHTML=list.map(cardHTML).join('');
+}
+
+function cardHTML(c){
+  var fu=needsFU(c);
+  var days=daysAgo(c.lastContact);
+  var dStr=days===null?'—':days===0?'Today':days===1?'Yesterday':days+'d ago';
+  var waUrl=wa(c.phone);
+  var phoneHTML=waUrl
+    ?'<a class="wa-link" href="'+esc(waUrl)+'" target="_blank" rel="noopener">'+IC_PHONE+'<span class="mono">'+esc(c.phone)+'</span></a>'
+    :'<span class="field-val muted">Not set</span>';
+  var loc=[c.city,c.state].filter(Boolean).join(', ')||'—';
+  var typeIcon = c.type==='Banker' ? IC_BANK : IC_AGENT;
+  var fuBadge=fu?'<span class="badge badge-fu">'+IC_ALERT+'Needs follow-up</span>':'';
+  var dCls=fu?' warn':'';
+  return '<article class="card" data-id="'+esc(c.id)+'" data-status="'+esc(c.status)+'">'
+    +'<div class="card-view">'
+    +'<div class="card-top">'
+      +'<div style="min-width:0;flex:1">'
+        +'<div class="card-name-row">'
+          +'<div class="card-name">'+esc(c.name||'—')+'</div>'
+        +'</div>'
+        +'<div class="card-meta">'
+          +'<span class="card-type">'+typeIcon+esc(c.type)+'</span>'
+          +(c.company?'<span class="sep">·</span><span>'+esc(c.company)+'</span>':'')
+        +'</div>'
+        +'<div class="badges">'
+          +'<span class="badge '+esc(c.status)+'"><span class="dot"></span>'+esc(c.status)+'</span>'
+          +fuBadge
+        +'</div>'
+      +'</div>'
+      +'<button class="btn-edit" data-action="edit" aria-label="Edit">'+IC_EDIT+'</button>'
+    +'</div>'
+    +'<div class="card-grid">'
+      +'<div class="field"><div class="field-lbl">Phone</div><div class="field-val">'+phoneHTML+'</div></div>'
+      +'<div class="field"><div class="field-lbl">Location</div><div class="field-val">'+esc(loc)+'</div></div>'
+      +'<div class="field"><div class="field-lbl">Files Referred</div><div class="field-val mono">'+(Number(c.files)||0)+'</div></div>'
+      +'<div class="field span-2"><div class="field-lbl">Last Contact</div><div class="field-val'+dCls+'">'+fmtDate(c.lastContact)+'<span class="sub mono">'+dStr+'</span></div></div>'
+    +'</div>'
+    +'<div class="card-notes'+(c.notes?'':' empty')+'">'+(c.notes?esc(c.notes):'No notes yet — tap edit to add.')+'</div>'
+    +'</div>'
+    +'<div class="card-edit">'+editHTML(c)+'</div>'
+    +'</article>';
+}
+
+function editHTML(c){
+  var isB=c.type==='Banker';
+  var banks=BANKS.map(function(b){ return '<option'+(isB&&c.company===b?' selected':'')+'>'+esc(b)+'</option>'; }).join('');
+  var states=STATES.map(function(s){ return '<option'+(c.state===s?' selected':'')+'>'+esc(s)+'</option>'; }).join('');
+  var statuses=STATUSES.map(function(s){ return '<option'+(c.status===s?' selected':'')+'>'+s+'</option>'; }).join('');
+  return '<div class="edit-grid">'
+    +'<div class="fg full"><label>Full Name</label><input type="text" name="name" value="'+esc(c.name||'')+'"/></div>'
+    +'<div class="fg"><label>Type</label><select name="type" onchange="syncEC(this)"><option value="Agent"'+(c.type==='Agent'?' selected':'')+'>Agent</option><option value="Banker"'+(c.type==='Banker'?' selected':'')+'>Banker</option></select></div>'
+    +'<div class="fg"><label>Company / Bank</label>'
+    +'<input type="text" name="companyA" value="'+esc(isB?'':c.company||'')+'"'+(isB?' style="display:none"':'')+'/>'
+    +'<select name="companyB"'+(isB?'':' style="display:none"')+'><option value="">Select bank…</option>'+banks+'</select>'
+    +'</div>'
+    +'<div class="fg"><label>Phone</label><input type="text" name="phone" value="'+esc(c.phone||'')+'"/></div>'
+    +'<div class="fg"><label>City</label><input type="text" name="city" value="'+esc(c.city||'')+'"/></div>'
+    +'<div class="fg"><label>State</label><select name="state"><option value="">Select state…</option>'+states+'</select></div>'
+    +'<div class="fg"><label>Files Referred</label><input type="number" name="files" value="'+(Number(c.files)||0)+'" min="0"/></div>'
+    +'<div class="fg"><label>Last Contact</label><input type="date" name="lastContact" value="'+esc(c.lastContact||'')+'"/></div>'
+    +'<div class="fg"><label>Status</label><select name="status">'+statuses+'</select></div>'
+    +'<div class="fg full"><label>Notes</label><textarea name="notes">'+esc(c.notes||'')+'</textarea></div>'
+    +'</div>'
+    +'<div class="edit-actions">'
+    +'<button class="btn-save" data-action="save">Save</button>'
+    +'<button class="btn-cancel" data-action="cancel">Cancel</button>'
+    +'<button class="btn-del" data-action="delete">Delete</button>'
+    +'</div>';
+}
+
+window.syncMC=function(){
+  var isB=G('mt').value==='Banker';
+  G('mc_a').style.display=isB?'none':'';
+  G('mc_b').style.display=isB?'':'none';
+};
+window.syncEC=function(sel){
+  var isB=sel.value==='Banker';
+  var wrap=sel.closest('.edit-grid');
+  var a=wrap.querySelector('[name="companyA"]');
+  var b=wrap.querySelector('[name="companyB"]');
+  if(a) a.style.display=isB?'none':'';
+  if(b) b.style.display=isB?'':'none';
+};
+
+/* ─── EVENTS ─── */
+G('cardsWrap').addEventListener('click',function(e){
+  var card=e.target.closest('.card'); if(!card) return;
+  var id=card.dataset.id;
+  var btn=e.target.closest('[data-action]'); if(!btn) return;
+  var action=btn.dataset.action;
+  if(action==='edit'){
+    document.querySelectorAll('.card.editing').forEach(function(cc){ if(cc!==card) cc.classList.remove('editing'); });
+    card.classList.toggle('editing');
+  } else if(action==='cancel'){
+    card.classList.remove('editing'); render();
+  } else if(action==='save'){
+    var ed=card.querySelector('.card-edit');
+    var nameVal=ed.querySelector('[name="name"]').value.trim();
+    if(!nameVal){ alert('Name is required.'); return; }
+    var typeVal=ed.querySelector('[name="type"]').value;
+    var ca=ed.querySelector('[name="companyA"]');
+    var cb=ed.querySelector('[name="companyB"]');
+    var companyVal=typeVal==='Banker'?(cb?cb.value:''):(ca?ca.value.trim():'');
+    var idx=-1;
+    for(var i=0;i<contacts.length;i++){ if(contacts[i].id===id){ idx=i; break; } }
+    if(idx===-1) return;
+    contacts[idx]=Object.assign({},contacts[idx],{
+      name:nameVal, type:typeVal, company:companyVal,
+      phone:ed.querySelector('[name="phone"]').value.trim(),
+      city:ed.querySelector('[name="city"]').value.trim(),
+      state:ed.querySelector('[name="state"]').value,
+      files:parseInt(ed.querySelector('[name="files"]').value)||0,
+      lastContact:ed.querySelector('[name="lastContact"]').value,
+      status:ed.querySelector('[name="status"]').value,
+      notes:ed.querySelector('[name="notes"]').value,
+      updatedAt:Date.now()
+    });
+    save(); render();
+  } else if(action==='delete'){
+    if(confirm('Delete this contact? Cannot be undone.')){
+      contacts=contacts.filter(function(c){ return c.id!==id; });
+      save(); render();
+    }
+  }
+});
+
+G('searchInput').addEventListener('input',function(e){ fSearch=e.target.value; render(); });
+G('fType').addEventListener('change',function(e){ fType=e.target.value; render(); });
+G('fBank').addEventListener('change',function(e){ fBank=e.target.value; render(); });
+
+/* keyboard: "/" focuses search */
+document.addEventListener('keydown',function(e){
+  if(e.key==='/' && document.activeElement.tagName!=='INPUT' && document.activeElement.tagName!=='TEXTAREA'){
+    e.preventDefault();
+    G('searchInput').focus();
+  }
+  if(e.key==='Escape' && G('addModal').classList.contains('show')) closeModal();
+});
+
+function openModal(){
+  G('mn').value=''; G('mt').value='Agent'; G('mc_a').value=''; G('mc_b').value='';
+  G('mph').value=''; G('mcy').value=''; G('mst').value=''; G('mfr').value='0';
+  G('mld').value=new Date().toISOString().slice(0,10);
+  G('mss').value='New'; G('mnt').value='';
+  G('mc_a').style.display=''; G('mc_b').style.display='none';
+  G('addModal').classList.add('show');
+  setTimeout(function(){ G('mn').focus(); },50);
+}
+function closeModal(){ G('addModal').classList.remove('show'); }
+G('addBtn').addEventListener('click',openModal);
+G('mCancel').addEventListener('click',closeModal);
+G('mClose').addEventListener('click',closeModal);
+G('addModal').addEventListener('click',function(e){ if(e.target===G('addModal')) closeModal(); });
+G('mSave').addEventListener('click',function(){
+  var name=G('mn').value.trim();
+  if(!name){ alert('Name is required.'); return; }
+  var type=G('mt').value;
+  var company=type==='Banker'?G('mc_b').value:G('mc_a').value.trim();
+  contacts.push({
+    id:uid(), name:name, type:type, company:company,
+    phone:G('mph').value.trim(), city:G('mcy').value.trim(),
+    state:G('mst').value, files:parseInt(G('mfr').value)||0,
+    lastContact:G('mld').value, status:G('mss').value,
+    notes:G('mnt').value, createdAt:Date.now(), updatedAt:Date.now()
+  });
+  save(); closeModal(); render();
+});
+
+/* ─── SEED DATA on first run (so the redesign has something to show) ─── */
+load(); render();
+</script>
+</body>
+</html>
